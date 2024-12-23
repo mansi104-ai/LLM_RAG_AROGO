@@ -3,15 +3,33 @@ from text_extraction import extract_text_from_pdf
 from hierarchical_indexing import create_hierarchical_index, index_to_dict
 from retrieval import create_faiss_index, retrieve_relevant_text
 from question_answering import answer_question
+import base64
+
+# Custom CSS
+def local_css(file_name):
+    with open(file_name, "r") as f:
+        st.markdown(f'<style>{f.read()}</style>', unsafe_allow_html=True)
+
+local_css("style.css")
+
+# App title and description
+st.set_page_config(page_title="SOWA", page_icon="📚", layout="wide")
+
+# Sidebar
+with st.sidebar:
+    # st.image("https://your-logo-url.com/logo.png", width=200)
+    st.title("SOWA")
+    st.markdown("Unlock the knowledge within your textbooks! 🚀")
+    
+    # File upload
+    uploaded_files = st.file_uploader("Choose up to 3 PDF textbooks", type="pdf", accept_multiple_files=True)
 
 # Initialize session state
 if 'textbooks' not in st.session_state:
     st.session_state.textbooks = {}
 
-st.title("Advanced Textbook Q&A System")
-
-# File upload
-uploaded_files = st.file_uploader("Choose up to 3 PDF textbooks", type="pdf", accept_multiple_files=True)
+# Main content
+st.title("📚 Advanced Textbook Q&A System")
 
 if uploaded_files:
     for file in uploaded_files[:3]:  # Limit to 3 textbooks
@@ -35,15 +53,18 @@ if uploaded_files:
             
             st.success(f"{file.name} processed successfully!")
 
-# Textbook selection
+# Textbook selection and querying
 if st.session_state.textbooks:
-    selected_textbook = st.selectbox("Select a textbook to query:", list(st.session_state.textbooks.keys()))
+    col1, col2 = st.columns([1, 2])
     
-    # User query input
-    query = st.text_input("Enter your question:")
+    with col1:
+        selected_textbook = st.selectbox("Select a textbook:", list(st.session_state.textbooks.keys()))
+    
+    with col2:
+        query = st.text_input("Enter your question:", placeholder="What would you like to know?")
     
     if query:
-        with st.spinner("Searching for relevant information and generating answer..."):
+        with st.spinner("🔍 Searching for answers..."):
             # Retrieve relevant text
             relevant_texts = retrieve_relevant_text(
                 query, 
@@ -57,12 +78,21 @@ if st.session_state.textbooks:
             # Answer question
             answer = answer_question(query, context)
             
-            st.subheader("Answer:")
-            st.write(answer)
+            # Display answer
+            st.markdown("## 💡 Answer")
+            st.info(answer)
             
-            st.subheader("Relevant Context:")
-            for i, text in enumerate(relevant_texts, 1):
-                st.write(f"{i}. {text[:200]}...")  # Show first 200 characters of each relevant text
+            # Display relevant context
+            with st.expander("📖 Relevant Context", expanded=False):
+                for i, text in enumerate(relevant_texts, 1):
+                    st.markdown(f"**Excerpt {i}:**")
+                    st.write(text[:300] + "...")  # Show first 300 characters of each relevant text
+                    st.markdown("---")
+
 else:
-    st.info("Please upload at least one textbook to start querying.")
+    st.info("👆 Please upload at least one textbook to start querying.")
+
+# Footer
+st.markdown("---")
+st.markdown("Made with ❤️ by Mansi")
 
