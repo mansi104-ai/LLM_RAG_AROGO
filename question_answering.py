@@ -1,7 +1,7 @@
 import groq
 import os
 
-client = groq.Groq(api_key=os.environ.get("GROQ_API_KEY"))
+client = groq.Groq(api_key="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")
 
 def answer_question(question, context):
     chat_completion = client.chat.completions.create(

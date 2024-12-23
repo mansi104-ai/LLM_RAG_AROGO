@@ -1,68 +1,50 @@
-import streamlit as st
-from text_extraction import extract_text_from_pdf
-from hierarchical_indexing import create_hierarchical_index, index_to_dict
-from retrieval import create_faiss_index, retrieve_relevant_text
-from question_answering import answer_question
+import nltk
+from nltk.tokenize import sent_tokenize, word_tokenize
+from nltk.corpus import stopwords
+import re
 
-# Initialize session state
-if 'textbooks' not in st.session_state:
-    st.session_state.textbooks = {}
+nltk.download('punkt', quiet=True)
+nltk.download('punkt_tab', quiet=True)
+nltk.download('stopwords', quiet=True)
 
-st.title("Advanced Textbook Q&A System")
+stop_words = set(stopwords.words('english'))
 
-# File upload
-uploaded_files = st.file_uploader("Choose up to 3 PDF textbooks", type="pdf", accept_multiple_files=True)
+class Node:
+    def __init__(self, content, level):
+        self.content = content
+        self.level = level
+        self.children = []
 
-if uploaded_files:
-    for file in uploaded_files[:3]:  # Limit to 3 textbooks
-        if file.name not in st.session_state.textbooks:
-            with st.spinner(f"Processing {file.name}..."):
-                # Extract text
-                text = extract_text_from_pdf(file)
-                
-                # Create hierarchical index
-                index = create_hierarchical_index(text)
-                
-                # Create FAISS index for efficient retrieval
-                faiss_index, indexed_texts = create_faiss_index([node.content for node in index.children])
-                
-                st.session_state.textbooks[file.name] = {
-                    "text": text,
-                    "index": index_to_dict(index),
-                    "faiss_index": faiss_index,
-                    "indexed_texts": indexed_texts
-                }
-            
-            st.success(f"{file.name} processed successfully!")
-
-# Textbook selection
-if st.session_state.textbooks:
-    selected_textbook = st.selectbox("Select a textbook to query:", list(st.session_state.textbooks.keys()))
+def create_hierarchical_index(text):
+    # Split text into chapters (assuming chapters start with "Chapter" or a number)
+    chapters = re.split(r'\n(?=Chapter|\d+\.)', text)
     
-    # User query input
-    query = st.text_input("Enter your question:")
+    root = Node("Textbook", 0)
     
-    if query:
-        with st.spinner("Searching for relevant information and generating answer..."):
-            # Retrieve relevant text
-            relevant_texts = retrieve_relevant_text(
-                query, 
-                st.session_state.textbooks[selected_textbook]["faiss_index"],
-                st.session_state.textbooks[selected_textbook]["indexed_texts"]
-            )
+    for chapter in chapters:
+        chapter_node = Node(chapter[:100] + "...", 1)  # Store first 100 chars as preview
+        root.children.append(chapter_node)
+        
+        # Split chapter into sections (assuming sections start with a number followed by a dot)
+        sections = re.split(r'\n(?=\d+\.)', chapter)
+        
+        for section in sections[1:]:  # Skip the first one as it's the chapter title
+            section_node = Node(section[:100] + "...", 2)
+            chapter_node.children.append(section_node)
             
-            # Combine relevant texts
-            context = " ".join(relevant_texts)
+            # Split section into paragraphs
+            paragraphs = section.split('\n\n')
             
-            # Answer question
-            answer = answer_question(query, context)
-            
-            st.subheader("Answer:")
-            st.write(answer)
-            
-            st.subheader("Relevant Context:")
-            for i, text in enumerate(relevant_texts, 1):
-                st.write(f"{i}. {text[:200]}...")  # Show first 200 characters of each relevant text
-else:
-    st.info("Please upload at least one textbook to start querying.")
+            for paragraph in paragraphs:
+                if len(paragraph.split()) > 20:  # Only consider paragraphs with more than 20 words
+                    paragraph_node = Node(paragraph, 3)
+                    section_node.children.append(paragraph_node)
+    
+    return root
 
+def index_to_dict(node):
+    return {
+        'content': node.content,
+        'level': node.level,
+        'children': [index_to_dict(child) for child in node.children]
+    }
