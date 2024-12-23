@@ -5,6 +5,9 @@ from retrieval import create_faiss_index, retrieve_relevant_text
 from question_answering import answer_question
 import base64
 
+# Set page configuration
+st.set_page_config(page_title="SOWA", page_icon="📚", layout="wide")
+
 # Custom CSS
 def local_css(file_name):
     with open(file_name, "r") as f:
@@ -13,11 +16,8 @@ def local_css(file_name):
 local_css("style.css")
 
 # App title and description
-st.set_page_config(page_title="SOWA", page_icon="📚", layout="wide")
-
 # Sidebar
 with st.sidebar:
-    # st.image("https://your-logo-url.com/logo.png", width=200)
     st.title("SOWA")
     st.markdown("Unlock the knowledge within your textbooks! 🚀")
     
@@ -95,4 +95,3 @@ else:
 # Footer
 st.markdown("---")
 st.markdown("Made with ❤️ by Mansi")
-
