@@ -41,31 +41,23 @@ def extract_text_from_pdf(pdf_file):
 
 # Function to create a simple hierarchical index and embed sentences
 # Function to create a simple hierarchical index and embed sentences
-def create_hierarchical_index(text):
-    try:
-        if not isinstance(text, str) or not text.strip():
-            raise ValueError("Invalid text provided for hierarchical indexing.")
+from typing import List, Dict
 
-        # Tokenize text into sentences
-        sentences = nltk.sent_tokenize(text)
+def create_hierarchical_index(text: str) -> Dict:
+    # Tokenize text into sentences
+    sentences = nltk.sent_tokenize(text)
 
-        # Ensure all entries in sentences are non-empty strings
-        sentences = [str(sentence).strip() for sentence in sentences if sentence.strip()]
-        if not sentences:
-            raise ValueError("No valid sentences found in the text.")
+    # Filter out invalid or empty sentences
+    sentences = [sentence.strip() for sentence in sentences if sentence.strip()]
 
-        # Create embeddings for valid sentences
-        embeddings = sentence_model.encode(sentences, convert_to_tensor=True)
+    # Organize sentences into paragraphs and chapters
+    paragraphs = [sentences[i:i + 5] for i in range(0, len(sentences), 5)]
+    chapters = [paragraphs[i:i + 10] for i in range(0, len(paragraphs), 10)]
 
-        # Group sentences into paragraphs and chapters
-        paragraphs = [sentences[i:i+5] for i in range(0, len(sentences), 5)]
-        chapters = [paragraphs[i:i+10] for i in range(0, len(paragraphs), 10)]
+    # Generate embeddings for valid sentences
+    embeddings = sentence_model.encode(sentences, convert_to_tensor=True)
 
-        return {"chapters": chapters, "sentences": sentences, "embeddings": embeddings}
-
-    except Exception as e:
-        st.error(f"Error creating hierarchical index: {e}")
-        return {}
+    return {"chapters": chapters, "sentences": sentences, "embeddings": embeddings}
 
 # Function for semantic retrieval using embeddings
 def retrieve_relevant_text(query, index):
