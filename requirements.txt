@@ -7,3 +7,4 @@ transformers
 sentence-transformers
 groq
 
+nltk.download("punkt_tab")
