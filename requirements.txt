@@ -3,8 +3,7 @@ PyPDF2
 nltk
 gensim
 transformers
-# pyserini
 sentence-transformers
 groq
+faiss-cpu
 
-# nltk.download("punkt_tab")
