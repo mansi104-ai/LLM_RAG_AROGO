@@ -1,4 +1,4 @@
-# About the Advanced Textbook Q&A System
+# About SOWA
 
 ## Project Vision
 

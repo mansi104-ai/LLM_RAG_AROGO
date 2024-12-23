@@ -1,4 +1,4 @@
-# Using the Advanced Textbook Q&A System
+# Using SOWA
 
 Welcome to the Advanced Textbook Q&A System! This guide will walk you through the process of using our system to upload textbooks, ask questions, and interpret the results.
 
