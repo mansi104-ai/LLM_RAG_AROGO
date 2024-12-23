@@ -1,4 +1,4 @@
-# Advanced Textbook Q&A System
+# SOWA
 
 ## 📚 Overview
 
