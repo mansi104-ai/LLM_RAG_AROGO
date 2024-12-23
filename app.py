@@ -29,7 +29,7 @@ if 'textbooks' not in st.session_state:
     st.session_state.textbooks = {}
 
 # Main content
-st.title("📚 Advanced Textbook Q&A System")
+st.title("📚 SOWA")
 
 if uploaded_files:
     for file in uploaded_files[:3]:  # Limit to 3 textbooks
