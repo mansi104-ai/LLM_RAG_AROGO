@@ -9,6 +9,7 @@ import os
 
 # Download necessary NLTK data
 nltk.download('punkt')
+nltk.download("punkt_tab")
 nltk.download('stopwords')
 
 # Initialize Groq client with API Key
