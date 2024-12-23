@@ -1,0 +1,9 @@
+streamlit
+PyPDF2
+nltk
+gensim
+transformers
+# pyserini
+sentence-transformers
+groq
+
