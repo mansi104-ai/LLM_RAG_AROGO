@@ -71,3 +71,24 @@ footer {
     font-size: 0.8rem;
 }
 
+/* Query History */
+.stExpander {
+    border: 1px solid #E0E0E0;
+    border-radius: 0.5rem;
+    margin-bottom: 1rem;
+}
+
+.stExpander > div:first-child {
+    border-bottom: 1px solid #E0E0E0;
+}
+
+/* Textbook Structure */
+.stExpander ul {
+    list-style-type: none;
+    padding-left: 1rem;
+}
+
+.stExpander li {
+    margin-bottom: 0.5rem;
+}
+

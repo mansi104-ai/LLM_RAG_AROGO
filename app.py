@@ -1,12 +1,16 @@
 import streamlit as st
+import json
 from text_extraction import extract_text_from_pdf
 from hierarchical_indexing import create_hierarchical_index, index_to_dict
 from retrieval import create_faiss_index, retrieve_relevant_text
 from question_answering import answer_question
-import base64
+from database import init_db, save_query, get_query_history, save_textbook_structure, get_textbook_structure
 
-# Set page configuration
+# Set page config
 st.set_page_config(page_title="SOWA", page_icon="📚", layout="wide")
+
+# Initialize database
+init_db()
 
 # Custom CSS
 def local_css(file_name):
@@ -16,8 +20,11 @@ def local_css(file_name):
 local_css("style.css")
 
 # App title and description
+#st.set_page_config(page_title="Advanced Textbook Q&A", page_icon="📚", layout="wide") #Removed as per instructions
+
 # Sidebar
 with st.sidebar:
+    # st.image("https://your-logo-url.com/logo.png", width=200)
     st.title("SOWA")
     st.markdown("Unlock the knowledge within your textbooks! 🚀")
     
@@ -50,6 +57,9 @@ if uploaded_files:
                     "faiss_index": faiss_index,
                     "indexed_texts": indexed_texts
                 }
+                
+                # Save textbook structure to database
+                save_textbook_structure(file.name, json.dumps(index_to_dict(index)))
             
             st.success(f"{file.name} processed successfully!")
 
@@ -78,6 +88,9 @@ if st.session_state.textbooks:
             # Answer question
             answer = answer_question(query, context)
             
+            # Save query to database
+            save_query(selected_textbook, query, answer)
+            
             # Display answer
             st.markdown("## 💡 Answer")
             st.info(answer)
@@ -88,6 +101,27 @@ if st.session_state.textbooks:
                     st.markdown(f"**Excerpt {i}:**")
                     st.write(text[:300] + "...")  # Show first 300 characters of each relevant text
                     st.markdown("---")
+    
+    # Display textbook structure
+    with st.expander("📑 Textbook Structure", expanded=False):
+        structure = get_textbook_structure(selected_textbook)
+        if structure:
+            structure_dict = json.loads(structure)
+            st.write(f"### Chapters in {selected_textbook}")
+            for i, chapter in enumerate(structure_dict['children'], 1):
+                st.write(f"{i}. {chapter['content']}")
+                for j, section in enumerate(chapter['children'], 1):
+                    st.write(f"   {i}.{j} {section['content']}")
+
+    # Display query history
+    with st.expander("📜 Query History", expanded=False):
+        history = get_query_history()
+        for entry in history:
+            st.write(f"**Textbook:** {entry[0]}")
+            st.write(f"**Query:** {entry[1]}")
+            st.write(f"**Answer:** {entry[2]}")
+            st.write(f"**Timestamp:** {entry[3]}")
+            st.markdown("---")
 
 else:
     st.info("👆 Please upload at least one textbook to start querying.")
@@ -95,3 +129,4 @@ else:
 # Footer
 st.markdown("---")
 st.markdown("Made with ❤️ by Mansi")
+
